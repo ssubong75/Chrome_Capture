@@ -11,6 +11,7 @@ internal static class ChromeCaptureHost
     private static readonly string DefaultDirectory =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), "Capture");
     private static readonly string ConfigDirectory =
+        Environment.GetEnvironmentVariable("CHROME_CAPTURE_CONFIG_DIR") ??
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ChromeCapture");
     private static readonly string ConfigPath = Path.Combine(ConfigDirectory, "settings.json");
     private static readonly JavaScriptSerializer Json = CreateSerializer();
