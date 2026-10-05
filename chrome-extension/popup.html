@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>Chrome Capture</title><link rel="stylesheet" href="style.css"></head>
+<body class="popup">
+<header><img src="icons/icon32.png" alt=""><div><h1>Chrome Capture</h1><p class="subtitle">오디오와 화면, 한 곳에 저장</p></div></header>
+<nav class="tabs" role="tablist" aria-label="캡처 방식"><button id="audio-tab" role="tab" aria-selected="true" aria-controls="audio-panel">오디오 녹음</button><button id="capture-tab" role="tab" aria-selected="false" aria-controls="capture-panel" tabindex="-1">화면 캡처</button></nav>
+<section id="audio-panel" role="tabpanel" aria-labelledby="audio-tab">
+<p class="muted">현재 탭의 소리 · MP3 / 192kbps</p>
+<fieldset><legend>녹음 길이</legend><label><input type="radio" name="seconds" value="3"> 3초</label><label><input type="radio" name="seconds" value="5" checked> 5초</label></fieldset>
+<button id="audio-record" class="primary">MP3 녹음 시작</button><button id="audio-cancel" hidden>녹음 취소</button>
+<p id="audio-status" class="status" role="status" aria-live="polite">준비됨</p><p id="audio-file" class="filename"></p><p id="audio-notice" class="notice"></p>
+<p id="audio-folder" class="muted path"></p><button id="audio-settings" class="secondary">공통 저장 폴더 · 설정</button><p id="audio-shortcut" class="muted small"></p>
+</section>
+<section id="capture-panel" role="tabpanel" aria-labelledby="capture-tab" hidden>
+<p class="muted">현재 보이는 영상 장면 · PNG</p>
+<label class="field">지연 시간<select id="capture-delaySeconds"><option value="0">0초</option><option value="1">1초</option><option value="3">3초</option><option value="5">5초</option></select></label>
+<label class="check"><input id="capture-cropToVideo" type="checkbox"> 영상 영역만 자동 크롭</label>
+<label class="check"><input id="capture-hideVideoOverlays" type="checkbox"> 캡처 시 영상 위 자막·컨트롤 숨기기</label>
+<button id="capture-captureBtn" class="primary">PNG 캡처 시작</button><button id="capture-optionsBtn" class="secondary">공통 저장 폴더 · 설정</button>
+<p id="capture-status" class="status" role="status" aria-live="polite"></p><p id="capture-shortcutHint" class="muted small"></p>
+</section>
+<footer>파일명: 날짜_시간 · 예: 20261005_193951</footer>
+<script type="module" src="popup.js"></script><script type="module" src="recorder/popup.js"></script><script type="module" src="capture/popup.js"></script>
+</body></html>

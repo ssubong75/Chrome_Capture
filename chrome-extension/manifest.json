@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyzljwdoH8FpqguXklskbQkjyELxVwsWJhtUHoaX8pTRKFV9v6wCEN60DeAedWqrCWdJlCoJ8LQnTzWMCkiIcenMEwtZ+DqUNDDZlQj9bYMqL27+G3Lo8yoyeB+IrQ0d2juAO5MkevgYR7FdLnSK41UWK4PTuRMbD4dc0wLYmcwxf91OwMdFIUouVDqm8+KedQegDUcVq6CC87AW5ThpWg/pKLxYYYJMZoOUgKFwsSAHKwSZxKJiTVadZA/+ESTITkX+fLcq5g6O+XebPX3bkexr8Bnu5Qkplz8vE1rJZBctjYdYvg0v/AIHp18HbhUAqEsmsGxa4mEoMuLttC6lRJwIDAQAB",
+  "name": "Chrome Capture",
+  "version": "1.0.0",
+  "description": "탭 소리 3·5초 MP3 녹음과 PNG 화면 캡처. 하나의 저장 폴더를 사용합니다.",
+  "minimum_chrome_version": "126",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "storage",
+    "nativeMessaging",
+    "tabCapture",
+    "offscreen",
+    "downloads"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "settings.html",
+    "open_in_tab": true
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Chrome Capture",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "commands": {
+    "record": {
+      "suggested_key": {
+        "default": "Alt+Shift+7",
+        "windows": "Alt+Shift+7",
+        "mac": "Command+Shift+7"
+      },
+      "description": "현재 탭 소리 녹음"
+    },
+    "capture-delayed": {
+      "suggested_key": {
+        "default": "Alt+Shift+0",
+        "windows": "Alt+Shift+0",
+        "mac": "Command+Shift+0"
+      },
+      "description": "현재 화면 캡처"
+    }
+  }
+}

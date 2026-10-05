@@ -1,0 +1,92 @@
+name: Test and package Chrome Capture
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag
+        default: v1.0.0
+        required: true
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - run: npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Browser verification
+          path: artifacts/
+          if-no-files-found: ignore
+  packages:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Test Mac installer in a temporary directory
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CVC_USER_LIBRARY_DIR="$RUNNER_TEMP/chrome-capture-library"
+          bash native-host-mac/install-host.sh
+          node tests/installer.mjs "$CVC_USER_LIBRARY_DIR/Application Support/Google/Chrome/NativeMessagingHosts/com.ssubong.chrome_capture.json"
+          npm test
+      - name: Compile and test Windows save helper
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:LOCALAPPDATA = Join-Path $env:RUNNER_TEMP 'ChromeCaptureLocal'
+          & .\native-host-windows\install-host.ps1
+          $manifest = Join-Path $env:LOCALAPPDATA 'ChromeCapture\native-host-windows\com.ssubong.chrome_capture.json'
+          node tests/installer.mjs $manifest
+          if ($LASTEXITCODE -ne 0) { throw 'Installer verification failed' }
+          $env:CHROME_CAPTURE_TEST_HOST = (Get-Content $manifest -Raw | ConvertFrom-Json).path
+          npm test
+          if ($LASTEXITCODE -ne 0) { throw 'Windows behavior tests failed' }
+      - name: Create platform ZIP
+        run: node packaging/build.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }} package
+          path: dist/*_Chrome_Capture.zip
+          if-no-files-found: error
+  publish:
+    needs: [browser, packages]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '* package'
+          path: dist
+          merge-multiple: true
+      - name: Publish verified release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          gh release create "$RELEASE_TAG" dist/Mac_Chrome_Capture.zip dist/Win_Chrome_Capture.zip --target "$RELEASE_SHA" --title "Chrome Capture · $RELEASE_TAG" --notes 'Integrated audio recording and still capture. MP3 only, 3/5 seconds (default 5). PNG only. One shared save folder. Date_time filenames. Includes platform save helper installers. Tested with isolated synthetic data.'
