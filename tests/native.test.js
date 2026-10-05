@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,writeFile,mkdir,readFile,rm,readdir} from 'node:fs/promises';
+import {mkdtemp,writeFile,mkdir,readFile,rm,readdir,realpath} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
@@ -21,14 +21,14 @@ test('native protocol saves PNG and real MP3 into one selected folder; collision
    const count=result.stdout.readUInt32LE();assert.equal(count,result.stdout.length-4);
    return JSON.parse(result.stdout.subarray(4).toString());
   }
-  assert.equal(send({action:'getSaveDirectory'}).path,folder);
+  assert.equal(await realpath(send({action:'getSaveDirectory'}).path),await realpath(folder));
   const samples=Float32Array.from({length:3*32000},(_,i)=>.2*Math.sin(i*2*Math.PI*440/32000));
   const mp3=Buffer.from(await encodeMp3([[samples,samples]],samples.length,32000).arrayBuffer());
   // Generated one-pixel PNG fixture; no personal images.
   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a1V8AAAAASUVORK5CYII=','base64');
   for(const [ext,mime,bytes] of [['mp3','audio/mpeg',mp3],['png','image/png',png]]){
    const result=send({action:'saveCapture',filename:'20261005_193951.'+ext,dataUrl:'data:'+mime+';base64,'+bytes.toString('base64')});
-   assert.equal(result.ok,true);assert.equal(path.dirname(result.path),folder);
+   assert.equal(result.ok,true);assert.equal(await realpath(path.dirname(result.path)),await realpath(folder));
    assert.equal(path.basename(result.path),'20261005_193951.'+ext);assert.deepEqual(await readFile(result.path),bytes);
    const second=send({action:'saveCapture',filename:'20261005_193951.'+ext,dataUrl:'data:'+mime+';base64,'+bytes.toString('base64')});
    assert.equal(path.basename(second.path),'20261005_193951_1.'+ext);
