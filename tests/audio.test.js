@@ -8,6 +8,6 @@ test('only 3/5 seconds; default and retired 10-second values resolve to 5',()=> 
 test('date_time filename and fixed MP3, including stale settings',()=> {
  const date=new Date(2026,9,5,19,39,51);
  for(const format of ['mp3','wav','mp4','webm',undefined]){
-  assert.equal(recordingFormat(format),'mp3');assert.equal(filename(date,format),'20261005_193951.mp3');
+  assert.equal(recordingFormat(format),'mp3');assert.equal(filename(date,format),'261005_1939.mp3');
  }
 });

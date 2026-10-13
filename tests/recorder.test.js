@@ -33,7 +33,7 @@ test('MP3 lifecycle: exact target samples, duplicate prevention, cancel, shared 
   assert.equal((await send('start',{streamId:'test',seconds,format:'wav'})).ok,true);
   assert.equal((await send('start',{streamId:'duplicate',seconds})).ok,false);
   processor.port.onmessage({data:[new Float32Array(seconds*32000+128),new Float32Array(seconds*32000+128)]});await done();
-  const saved=messages.filter(x=>x.type==='save-audio').at(-1);assert.match(saved.filename,/^\d{8}_\d{6}\.mp3$/);assert.match(saved.url,/^data:audio\/mpeg;base64,/);
+  const saved=messages.filter(x=>x.type==='save-audio').at(-1);assert.match(saved.filename,/^\d{6}_\d{4}\.mp3$/);assert.match(saved.url,/^data:audio\/mpeg;base64,/);
   assert.equal(messages.at(-1).state.phase,'done');assert.match(messages.at(-1).state.filename,/^shared\//);
  }
  assert.equal(tracks.every(x=>x.stopped),true);assert.equal(contexts.every(x=>x.state==='closed'),true);

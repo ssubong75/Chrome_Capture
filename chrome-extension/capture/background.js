@@ -539,14 +539,13 @@ function sendNativeMessage(payload) { return nativeMessage(payload); }
 function buildFilename(prefix, format) {
 
   const now = new Date();
-  const yyyy = now.getFullYear();
+  const yy = String(now.getFullYear() % 100).padStart(2, '0');
   const mm = String(now.getMonth() + 1).padStart(2, '0');
   const dd = String(now.getDate()).padStart(2, '0');
   const hh = String(now.getHours()).padStart(2, '0');
   const mi = String(now.getMinutes()).padStart(2, '0');
-  const ss = String(now.getSeconds()).padStart(2, '0');
   const ext = 'png';
-  const timestamp = `${yyyy}${mm}${dd}_${hh}${mi}${ss}`;
+  const timestamp = `${yy}${mm}${dd}_${hh}${mi}`;
   return `${timestamp}.${ext}`;
 }
 

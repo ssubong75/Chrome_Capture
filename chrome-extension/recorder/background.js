@@ -53,7 +53,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (message.type === 'cancel') return chrome.runtime.sendMessage({target:'offscreen',type:'cancel'});
     if (message.type === 'state') { await setState(message.state); return {ok:true}; }
     if (message.type === 'save-audio') {
-      if (!/^data:audio\/mpeg;base64,/.test(message.url) || !/^\d{8}_\d{6}\.mp3$/.test(message.filename)) throw new Error('오디오 파일 형식이 잘못되었습니다.');
+      if (!/^data:audio\/mpeg;base64,/.test(message.url) || !/^\d{6}_\d{4}\.mp3$/.test(message.filename)) throw new Error('오디오 파일 형식이 잘못되었습니다.');
       const result = await nativeMessage({action:'saveCapture',dataUrl:message.url,filename:message.filename});
       if (!result.ok) throw new Error(result.error || '지정 폴더 저장 실패');
       return result;

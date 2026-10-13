@@ -28,7 +28,7 @@ Chrome Recoder와 Video Capture를 하나로 합친 Mac·Windows 공용 Chrome �
 | 시간 | 3초 / 5초, 최초 기본값 5초 | 지연 0초 / 1초 / 3초 / 5초 |
 | Mac 단축키 | Command + Shift + 7 | Command + Shift + 0 |
 | Windows 단축키 | Alt + Shift + 7 | Alt + Shift + 0 |
-| 파일명 예 | 20261005_193951.mp3 | 20261005_193951.png |
+| 파일명 예 | 261005_1939.mp3 | 261005_1939.png |
 
 두 형식은 **동일한 지정 폴더**에 저장됩니다. 기본값은 바탕화면의 `Capture` 폴더입니다. 같은 파일명이 있으면 숫자를 붙이며 기존 파일을 덮어쓰지 않습니다. 선택한 녹음 길이와 화면 캡처 설정은 기억합니다.
 

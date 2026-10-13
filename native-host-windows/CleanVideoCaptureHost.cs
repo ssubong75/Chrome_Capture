@@ -186,7 +186,7 @@ internal static class ChromeCaptureHost
 
     private static string SanitizeFilename(string filename, string extension)
     {
-        string fallback = DateTime.Now.ToString("yyyyMMdd_HHmmss") + "." + extension;
+        string fallback = DateTime.Now.ToString("yyMMdd_HHmm") + "." + extension;
         string safe = Path.GetFileName(String.IsNullOrWhiteSpace(filename) ? fallback : filename);
         foreach (char invalid in Path.GetInvalidFileNameChars()) safe = safe.Replace(invalid, '_');
         if (!safe.EndsWith("." + extension, StringComparison.OrdinalIgnoreCase))

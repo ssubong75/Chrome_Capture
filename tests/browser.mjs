@@ -38,7 +38,7 @@ try{
  await popup.evaluate(()=>chrome.storage.sync.set({format:'jpeg',filenamePrefix:'old-prefix',delaySeconds:0,cropToVideo:true,hideVideoOverlays:true}));
  const scene=await context.newPage();await scene.goto('http://127.0.0.1:'+server.address().port+'/');await scene.bringToFront();
  const capture=await popup.evaluate(()=>chrome.runtime.sendMessage({target:'capture',type:'CAPTURE_NOW'}));assert.equal(capture.ok,true,JSON.stringify(capture));
- const saved=await worker.evaluate(()=>globalThis.testSaved.at(-1));assert.match(saved.filename,/^\d{8}_\d{6}\.png$/);assert.match(saved.dataUrl,/^data:image\/png;base64,/);
+ const saved=await worker.evaluate(()=>globalThis.testSaved.at(-1));assert.match(saved.filename,/^\d{6}_\d{4}\.png$/);assert.match(saved.dataUrl,/^data:image\/png;base64,/);
  const png=Buffer.from(saved.dataUrl.split(',')[1],'base64');assert.equal(png.readUInt32BE(16),400);assert.equal(png.readUInt32BE(20),240);
  assert.equal(await scene.locator('video').evaluate(v=>v.controls),true);
  assert.equal(await scene.locator('[data-cvc-clean-hidden]').count(),0);

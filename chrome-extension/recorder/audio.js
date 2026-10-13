@@ -3,7 +3,7 @@ export function recordingFormat() { return 'mp3'; }
 
 export function filename(now = new Date(), format = 'mp3') {
   const pad = n => String(n).padStart(2, '0');
-  const stamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  const stamp = `${pad(now.getFullYear()%100)}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
   return `${stamp}.${recordingFormat(format)}`;
 }
 
