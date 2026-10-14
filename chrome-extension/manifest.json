@@ -3,7 +3,7 @@
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyzljwdoH8FpqguXklskbQkjyELxVwsWJhtUHoaX8pTRKFV9v6wCEN60DeAedWqrCWdJlCoJ8LQnTzWMCkiIcenMEwtZ+DqUNDDZlQj9bYMqL27+G3Lo8yoyeB+IrQ0d2juAO5MkevgYR7FdLnSK41UWK4PTuRMbD4dc0wLYmcwxf91OwMdFIUouVDqm8+KedQegDUcVq6CC87AW5ThpWg/pKLxYYYJMZoOUgKFwsSAHKwSZxKJiTVadZA/+ESTITkX+fLcq5g6O+XebPX3bkexr8Bnu5Qkplz8vE1rJZBctjYdYvg0v/AIHp18HbhUAqEsmsGxa4mEoMuLttC6lRJwIDAQAB",
   "name": "Chrome Capture",
   "version": "1.0.0",
-  "description": "탭 소리 3·5초 MP3 녹음과 PNG 화면 캡처. 하나의 저장 폴더를 사용합니다.",
+  "description": "탭 소리 3·5초 AAC-LC (M4A) 녹음과 PNG 화면 캡처. 하나의 저장 폴더를 사용합니다.",
   "minimum_chrome_version": "126",
   "permissions": [
     "activeTab",

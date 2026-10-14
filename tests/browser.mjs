@@ -43,7 +43,7 @@ try{
  assert.equal(await scene.locator('video').evaluate(v=>v.controls),true);
  assert.equal(await scene.locator('[data-cvc-clean-hidden]').count(),0);
  // A still capture must not clear an ongoing recording badge.
- await popup.evaluate(()=>chrome.runtime.sendMessage({target:'audio',type:'state',state:{phase:'recording',seconds:5,startedAt:Date.now(),format:'mp3'}}));
+ await popup.evaluate(()=>chrome.runtime.sendMessage({target:'audio',type:'state',state:{phase:'recording',seconds:5,startedAt:Date.now(),format:'m4a'}}));
  const concurrent=await popup.evaluate(()=>Promise.all([chrome.runtime.sendMessage({target:'capture',type:'CAPTURE_NOW',overrideSettings:{delaySeconds:1}}),chrome.runtime.sendMessage({target:'capture',type:'CAPTURE_NOW'})]));
  assert.equal(concurrent.filter(x=>x.ok).length,1);assert.match(concurrent.find(x=>!x.ok).error,/캡처 또는 저장 중/);
  assert.equal(await worker.evaluate(()=>chrome.action.getBadgeText({})), 'REC');
@@ -59,7 +59,7 @@ try{
  await popup.screenshot({path:path.join(root,'artifacts/audio-popup.png')});
  await popup.locator('#capture-tab').click();await popup.screenshot({path:path.join(root,'artifacts/capture-popup.png')});
  assert.deepEqual(errors,[]);
- console.log('PASS: real MV3 load, 3/5-second UI, fixed MP3/PNG, common settings, date_time PNG, 400x240 crop, overlay restoration, concurrent capture lock, REC badge isolation.');
+ console.log('PASS: real MV3 load, 3/5-second UI, fixed AAC/PNG, common settings, date_time PNG, 400x240 crop, overlay restoration, concurrent capture lock, REC badge isolation.');
 }finally{
  if(context)await context.close();await rm(profile,{recursive:true,force:true});await new Promise(resolve=>server.close(resolve));
 }

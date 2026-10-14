@@ -39,10 +39,18 @@ if (Test-Path $ExePath) {
     Remove-Item $ExePath -Force
 }
 
-Add-Type -TypeDefinition (Get-Content $SourcePath -Raw -Encoding UTF8) `
+if (Test-Path (Join-Path $ScriptDir "VideoCaptureHost.exe")) {
+    Copy-Item (Join-Path $ScriptDir "VideoCaptureHost.exe") $ExePath -Force
+} else {
+    Add-Type -TypeDefinition (Get-Content $SourcePath -Raw -Encoding UTF8) `
     -ReferencedAssemblies @("System.dll", "System.Core.dll", "System.Web.Extensions.dll", "System.Windows.Forms.dll") `
     -OutputAssembly $ExePath `
     -OutputType ConsoleApplication
+}
+if (-not (Test-Path (Join-Path $ScriptDir "vendor\ffmpeg.exe"))) {
+    throw "AAC encoder is missing from the package. Download the updated Windows ZIP."
+}
+Copy-Item (Join-Path $ScriptDir "vendor") $InstallDir -Recurse -Force
 
 $Manifest = @{
     name = $HostName

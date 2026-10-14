@@ -47,6 +47,25 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Prepare verified Windows AAC encoder
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $archive = Join-Path $env:RUNNER_TEMP 'ffmpeg-lgpl.zip'
+          $url = 'https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-13-13-05/ffmpeg-N-127507-g24e860f6d3-win64-lgpl.zip'
+          Invoke-WebRequest -Uri $url -OutFile $archive
+          if ((Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() -ne 'd51c74a0da099b7c69216af4c29dc99274cad93a743aa1d5935ba024f488c309') { throw 'FFmpeg SHA-256 mismatch' }
+          $extracted = Join-Path $env:RUNNER_TEMP 'ffmpeg-lgpl'
+          Expand-Archive $archive $extracted -Force
+          $binary = Get-ChildItem $extracted -Filter ffmpeg.exe -Recurse | Select-Object -First 1
+          $probe = Get-ChildItem $extracted -Filter ffprobe.exe -Recurse | Select-Object -First 1
+          $vendor = '.\native-host-windows\vendor'
+          New-Item -ItemType Directory $vendor -Force | Out-Null
+          Copy-Item $binary.FullName $vendor
+          Get-ChildItem $binary.Directory.Parent.FullName -File | Copy-Item -Destination $vendor
+          @('LGPL FFmpeg build: ' + $url, 'Build scripts/source instructions: https://github.com/BtbN/FFmpeg-Builds', 'FFmpeg source revision: https://github.com/FFmpeg/FFmpeg/tree/24e860f6d3') | Set-Content (Join-Path $vendor 'SOURCE.txt')
+          "CHROME_CAPTURE_FFPROBE=$($probe.FullName)" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
       - name: Test Mac installer in a temporary directory
         if: runner.os == 'macOS' && !inputs.skip_validation
         shell: bash
@@ -75,6 +94,11 @@ jobs:
           $env:CHROME_CAPTURE_TEST_HOST = (Get-Content $manifest -Raw | ConvertFrom-Json).path
           npm test
           if ($LASTEXITCODE -ne 0) { throw 'Windows behavior tests failed' }
+      - name: Include Windows helper compiled on this runner
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Copy-Item (Join-Path $env:RUNNER_TEMP 'ChromeCaptureLocal\ChromeCapture\native-host-windows\VideoCaptureHost.exe') '.\native-host-windows\VideoCaptureHost.exe' -Force
       - name: Create platform ZIP
         run: node packaging/build.mjs
       - uses: actions/upload-artifact@v4
@@ -104,5 +128,5 @@ jobs:
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" dist/Mac_Chrome_Capture.zip dist/Win_Chrome_Capture.zip --clobber
           else
-            gh release create "$RELEASE_TAG" dist/Mac_Chrome_Capture.zip dist/Win_Chrome_Capture.zip --target "$RELEASE_SHA" --title "Chrome Capture · $RELEASE_TAG" --notes 'Integrated MP3 recording and PNG capture. Filenames use yymmdd_hhmm. Includes install/uninstall helpers, Getting Started.txt, and User Guide.md.'
+            gh release create "$RELEASE_TAG" dist/Mac_Chrome_Capture.zip dist/Win_Chrome_Capture.zip --target "$RELEASE_SHA" --title "Chrome Capture · $RELEASE_TAG" --notes 'AAC-LC recording (M4A, 48kHz stereo, 128kbps) and PNG capture. Filenames use yymmdd_hhmm. Includes install/uninstall helpers and user guides.'
           fi

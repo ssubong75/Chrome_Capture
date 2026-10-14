@@ -1,5 +1,4 @@
-import { encodeMp3 } from './mp3.js';
-import { filename, duration, recordingFormat } from './audio.js';
+import { filename, duration, recordingFormat, encodeWav } from './audio.js';
 let recording = null;
 let busy = false;
 const report = state => chrome.runtime.sendMessage({target:'audio',type:'state',state});
@@ -24,15 +23,20 @@ async function save(rec) {
   if (rec.finishing || recording !== rec) return;
   rec.finishing = true;
   try {
-    const blob = encodeMp3(rec.chunks, rec.targetFrames, rec.context.sampleRate);
-    if (!blob.size) throw new Error('MP3 녹음 데이터가 비어 있습니다.');
+    const blob = new Blob([encodeWav(rec.chunks, rec.targetFrames, rec.context.sampleRate)], {type:'audio/wav'});
+    if (!blob.size) throw new Error('녹음 데이터가 비어 있습니다.');
     await cleanup(rec);
     const name = filename(new Date(), rec.format);
     await report({phase:'saving',message:`${rec.format.toUpperCase()} 저장 중…`});
-    const url = await new Promise((resolve,reject) => {
+    const pcmUrl = await new Promise((resolve,reject) => {
       const reader = new FileReader(); reader.onload = () => resolve(reader.result);
       reader.onerror = () => reject(reader.error); reader.readAsDataURL(blob);
     });
+    const encoded = await chrome.runtime.sendMessage({target:'audio',type:'encode-audio',url:pcmUrl});
+    if (!encoded?.ok || !/^data:audio\/mp4;base64,/.test(encoded.dataUrl || '')) {
+      throw new Error(encoded?.error || 'AAC 인코딩 실패. 저장 도우미를 다시 설치해 주세요.');
+    }
+    const url = encoded.dataUrl;
     let notice;
     const saved = await chrome.runtime.sendMessage({target:'audio',type:'save-audio',url,filename:name});
     if (saved?.ok) {
@@ -58,7 +62,7 @@ async function start(message) {
       audio:{mandatory:{chromeMediaSource:'tab',chromeMediaSourceId:message.streamId}},video:false
     });
     if (recording !== rec) { await cleanup(rec); return {ok:false,error:'취소되었습니다.'}; }
-    rec.context = new AudioContext({sampleRate:32000});
+    rec.context = new AudioContext({sampleRate:48000});
     await rec.context.audioWorklet.addModule(chrome.runtime.getURL('recorder/capture-worklet.js'));
     if (recording !== rec) { await cleanup(rec); return {ok:false,error:'취소되었습니다.'}; }
     rec.targetFrames = Math.round(rec.seconds * rec.context.sampleRate);

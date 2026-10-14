@@ -4,9 +4,9 @@
 <header><img src="icons/icon32.png" alt=""><div><h1>Chrome Capture</h1><p class="subtitle">오디오와 화면, 한 곳에 저장</p></div></header>
 <nav class="tabs" role="tablist" aria-label="캡처 방식"><button id="audio-tab" role="tab" aria-selected="true" aria-controls="audio-panel">오디오 녹음</button><button id="capture-tab" role="tab" aria-selected="false" aria-controls="capture-panel" tabindex="-1">화면 캡처</button></nav>
 <section id="audio-panel" role="tabpanel" aria-labelledby="audio-tab">
-<p class="muted">현재 탭의 소리 · MP3 / 192kbps</p>
+<p class="muted">현재 탭의 소리 · AAC-LC (M4A) / 128kbps · 48kHz</p>
 <fieldset><legend>녹음 길이</legend><label><input type="radio" name="seconds" value="3"> 3초</label><label><input type="radio" name="seconds" value="5" checked> 5초</label></fieldset>
-<button id="audio-record" class="primary">MP3 녹음 시작</button><button id="audio-cancel" hidden>녹음 취소</button>
+<button id="audio-record" class="primary">AAC-LC (M4A) 녹음 시작</button><button id="audio-cancel" hidden>녹음 취소</button>
 <p id="audio-status" class="status" role="status" aria-live="polite">준비됨</p><p id="audio-file" class="filename"></p><p id="audio-notice" class="notice"></p>
 <p id="audio-folder" class="muted path"></p><button id="audio-settings" class="secondary">공통 저장 폴더 · 설정</button><p id="audio-shortcut" class="muted small"></p>
 </section>

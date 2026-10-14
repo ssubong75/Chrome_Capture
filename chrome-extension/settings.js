@@ -15,7 +15,7 @@ $('chooseBtn').onclick=()=>action('chooseSaveDirectory','공통 저장 폴더를
 $('openBtn').onclick=()=>action('openSaveDirectory','공통 저장 폴더를 열었습니다.');
 $('resetBtn').onclick=()=>action('resetSaveDirectory','기본 저장 폴더로 되돌렸습니다.');
 $('shortcutBtn').onclick=()=>chrome.tabs.create({url:'chrome://extensions/shortcuts'});
-for(const el of document.querySelectorAll('[name=seconds]'))el.onchange=()=>{if(el.checked)void chrome.storage.local.set({seconds:duration(el.value),format:'mp3'});};
+for(const el of document.querySelectorAll('[name=seconds]'))el.onchange=()=>{if(el.checked)void chrome.storage.local.set({seconds:duration(el.value),format:'m4a'});};
 async function init(){
  const {seconds}=await chrome.storage.local.get({seconds:5});document.querySelector(`[name=seconds][value="${duration(seconds)}"]`).checked=true;
  const commands=await chrome.commands.getAll();

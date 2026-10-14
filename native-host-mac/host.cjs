@@ -96,10 +96,10 @@ function openSaveDirectory() {
 }
 
 function parseDataUrl(dataUrl) {
-  const match = /^data:(image\/png|audio\/mpeg);base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl || '');
-  if (!match) throw new Error('PNG 또는 MP3 파일 데이터가 필요합니다.');
+  const match = /^data:(image\/png|audio\/mp4);base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl || '');
+  if (!match) throw new Error('PNG 또는 M4A 파일 데이터가 필요합니다.');
 
-  const ext = match[1].toLowerCase() === 'image/png' ? 'png' : 'mp3';
+  const ext = match[1].toLowerCase() === 'image/png' ? 'png' : 'm4a';
   return { ext, buffer: Buffer.from(match[2], 'base64') };
 }
 
@@ -144,12 +144,44 @@ function saveCapture(message) {
   return { ok: true, path: outputPath, saveDirectory, bytes: buffer.length };
 }
 
+function encodeAudio(message) {
+  const match = /^data:audio\/wav;base64,([A-Za-z0-9+/=]+)$/.exec(message.dataUrl || '');
+  if (!match) throw new Error('PCM WAV 녹음 데이터가 필요합니다.');
+  const input = Buffer.from(match[1], 'base64');
+  // Only accept the fixed PCM16/stereo/48 kHz WAV produced by the recorder.
+  if (input.length < 44 || input.toString('ascii', 0, 4) !== 'RIFF' ||
+      input.toString('ascii', 8, 16) !== 'WAVEfmt ' || input.readUInt32LE(16) !== 16 ||
+      input.readUInt16LE(20) !== 1 || input.readUInt16LE(22) !== 2 ||
+      input.readUInt32LE(24) !== 48000 || input.readUInt16LE(34) !== 16 ||
+      input.toString('ascii', 36, 40) !== 'data' || input.readUInt32LE(40) !== input.length - 44 ||
+      ![3, 5].includes((input.length - 44) / (48000 * 4))) {
+    throw new Error('48 kHz 스테레오 3초 또는 5초 녹음만 지원합니다.');
+  }
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-capture-aac-'));
+  try {
+    const source = path.join(tempDir, 'input.wav');
+    const output = path.join(tempDir, 'output.m4a');
+    fs.writeFileSync(source, input, {mode:0o600});
+    execFileSync('/usr/bin/afconvert', ['-f','m4af','-d','aac@48000','-b','128000','-s','0','-c','2',source,output], {
+      timeout:30000, stdio:['ignore','pipe','pipe']
+    });
+    const buffer = fs.readFileSync(output);
+    if (!buffer.length) throw new Error('AAC 인코딩 결과가 비어 있습니다.');
+    return {ok:true, dataUrl:`data:audio/mp4;base64,${buffer.toString('base64')}`};
+  } finally {
+    fs.rmSync(tempDir, {recursive:true, force:true});
+  }
+}
+
 function main() {
   try {
     const message = readNativeMessage();
     let response;
 
     switch (message.action) {
+      case 'encodeAudio':
+        response = encodeAudio(message);
+        break;
       case 'saveCapture':
         response = saveCapture(message);
         break;

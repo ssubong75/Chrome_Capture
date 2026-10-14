@@ -1,7 +1,7 @@
 export function duration(value) { return [3,5].includes(Number(value)) ? Number(value) : 5; }
-export function recordingFormat() { return 'mp3'; }
+export function recordingFormat() { return 'm4a'; }
 
-export function filename(now = new Date(), format = 'mp3') {
+export function filename(now = new Date(), format = 'm4a') {
   const pad = n => String(n).padStart(2, '0');
   const stamp = `${pad(now.getFullYear()%100)}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
   return `${stamp}.${recordingFormat(format)}`;

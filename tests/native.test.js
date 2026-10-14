@@ -5,10 +5,10 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {encodeMp3} from '../chrome-extension/recorder/mp3.js';
+
 const helper=fileURLToPath(new URL('../native-host-mac/host.cjs',import.meta.url));
 
-test('native protocol saves PNG and real MP3 into one selected folder; collision preserves files',async()=> {
+test('native protocol saves PNG and M4A into one selected folder; collision preserves files',async()=> {
  const temp=await mkdtemp(path.join(tmpdir(),'chrome-capture-save-'));
  try{
   const config=path.join(temp,'config');const folder=path.join(temp,'공통 폴더');await mkdir(config);await mkdir(folder);
@@ -23,10 +23,10 @@ test('native protocol saves PNG and real MP3 into one selected folder; collision
   }
   assert.equal(await realpath(send({action:'getSaveDirectory'}).path),await realpath(folder));
   const samples=Float32Array.from({length:3*32000},(_,i)=>.2*Math.sin(i*2*Math.PI*440/32000));
-  const mp3=Buffer.from(await encodeMp3([[samples,samples]],samples.length,32000).arrayBuffer());
+  const m4a=Buffer.from('00000014667479704d344120000000004d344120','hex');
   // Generated one-pixel PNG fixture; no personal images.
   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a1V8AAAAASUVORK5CYII=','base64');
-  for(const [ext,mime,bytes] of [['mp3','audio/mpeg',mp3],['png','image/png',png]]){
+  for(const [ext,mime,bytes] of [['m4a','audio/mp4',m4a],['png','image/png',png]]){
    const result=send({action:'saveCapture',filename:'261005_1939.'+ext,dataUrl:'data:'+mime+';base64,'+bytes.toString('base64')});
    assert.equal(result.ok,true);assert.equal(await realpath(path.dirname(result.path)),await realpath(folder));
    assert.equal(path.basename(result.path),'261005_1939.'+ext);assert.deepEqual(await readFile(result.path),bytes);

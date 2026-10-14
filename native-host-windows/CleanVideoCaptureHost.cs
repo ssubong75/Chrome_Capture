@@ -27,6 +27,9 @@ internal static class ChromeCaptureHost
 
             switch (action)
             {
+                case "encodeAudio":
+                    response = EncodeAudio(message);
+                    break;
                 case "saveCapture":
                     response = SaveCapture(message);
                     break;
@@ -167,8 +170,8 @@ internal static class ChromeCaptureHost
         string metadata = dataUrl.Substring(0, comma).ToLowerInvariant();
         string extension;
         if (metadata == "data:image/png;base64") extension = "png";
-        else if (metadata == "data:audio/mpeg;base64") extension = "mp3";
-        else throw new InvalidOperationException("Only PNG and MP3 are supported.");
+        else if (metadata == "data:audio/mp4;base64") extension = "m4a";
+        else throw new InvalidOperationException("Only PNG and M4A are supported.");
         byte[] image = Convert.FromBase64String(dataUrl.Substring(comma + 1));
         string filename = SanitizeFilename(GetString(message, "filename"), extension);
         string saveDirectory = GetSaveDirectory();
@@ -182,6 +185,51 @@ internal static class ChromeCaptureHost
             { "saveDirectory", saveDirectory },
             { "bytes", image.Length }
         };
+    }
+
+    private static Dictionary<string, object> EncodeAudio(Dictionary<string, object> message)
+    {
+        string dataUrl = GetString(message, "dataUrl");
+        const string prefix = "data:audio/wav;base64,";
+        if (!dataUrl.StartsWith(prefix, StringComparison.Ordinal))
+            throw new InvalidOperationException("PCM WAV recording data is required.");
+        byte[] input = Convert.FromBase64String(dataUrl.Substring(prefix.Length));
+        if (input.Length < 44 || Encoding.ASCII.GetString(input, 0, 4) != "RIFF" ||
+            Encoding.ASCII.GetString(input, 8, 8) != "WAVEfmt " || BitConverter.ToInt32(input, 16) != 16 ||
+            BitConverter.ToInt16(input, 20) != 1 || BitConverter.ToInt16(input, 22) != 2 ||
+            BitConverter.ToInt32(input, 24) != 48000 || BitConverter.ToInt16(input, 34) != 16 ||
+            Encoding.ASCII.GetString(input, 36, 4) != "data" || BitConverter.ToInt32(input, 40) != input.Length - 44 ||
+            (input.Length != 44 + 3 * 48000 * 4 && input.Length != 44 + 5 * 48000 * 4))
+            throw new InvalidOperationException("Only 3/5-second PCM16 stereo 48 kHz recordings are supported.");
+        string encoder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vendor", "ffmpeg.exe");
+        if (!File.Exists(encoder)) throw new FileNotFoundException("AAC encoder is missing. Reinstall the save helper.");
+        string temp = Path.Combine(Path.GetTempPath(), "chrome-capture-aac-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(temp);
+        try
+        {
+            string source = Path.Combine(temp, "input.wav");
+            string output = Path.Combine(temp, "output.m4a");
+            File.WriteAllBytes(source, input);
+            using (Process process = Process.Start(new ProcessStartInfo {
+                FileName = encoder,
+                Arguments = "-nostdin -hide_banner -loglevel error -y -i \"" + source +
+                    "\" -map 0:a:0 -c:a aac -profile:a aac_low -b:a 128k -ar 48000 -ac 2 -movflags +faststart \"" + output + "\"",
+                UseShellExecute = false, CreateNoWindow = true,
+                RedirectStandardOutput = true, RedirectStandardError = true
+            }))
+            {
+                var errorTask = process.StandardError.ReadToEndAsync();
+                if (!process.WaitForExit(30000)) { process.Kill(); throw new TimeoutException("AAC encoding timed out."); }
+                string detail = errorTask.GetAwaiter().GetResult();
+                if (process.ExitCode != 0) throw new InvalidOperationException("AAC encoding failed: " + detail);
+            }
+            byte[] bytes = File.ReadAllBytes(output);
+            if (bytes.Length == 0) throw new InvalidOperationException("AAC output is empty.");
+            return new Dictionary<string, object> {
+                { "ok", true }, { "dataUrl", "data:audio/mp4;base64," + Convert.ToBase64String(bytes) }
+            };
+        }
+        finally { Directory.Delete(temp, true); }
     }
 
     private static string SanitizeFilename(string filename, string extension)
