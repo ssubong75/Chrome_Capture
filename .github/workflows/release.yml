@@ -52,9 +52,11 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
+          $ProgressPreference = 'SilentlyContinue'
           $archive = Join-Path $env:RUNNER_TEMP 'ffmpeg-lgpl.zip'
           $url = 'https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-13-13-05/ffmpeg-N-127507-g24e860f6d3-win64-lgpl.zip'
-          Invoke-WebRequest -Uri $url -OutFile $archive
+          & curl.exe --fail --location --retry 3 --silent --show-error --output $archive $url
+          if ($LASTEXITCODE -ne 0) { throw 'FFmpeg download failed' }
           if ((Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() -ne 'd51c74a0da099b7c69216af4c29dc99274cad93a743aa1d5935ba024f488c309') { throw 'FFmpeg SHA-256 mismatch' }
           $extracted = Join-Path $env:RUNNER_TEMP 'ffmpeg-lgpl'
           Expand-Archive $archive $extracted -Force

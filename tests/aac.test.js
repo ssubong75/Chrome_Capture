@@ -35,7 +35,7 @@ test('native AAC encoder produces AAC-LC / 48 kHz / stereo / 128 kbps for 3 and 
    const r=spawnSync(probe,['-v','error','-show_entries','stream=codec_name,profile,sample_rate,channels,bit_rate,duration','-of','json',saved.path],{encoding:'utf8'});
    if(r.error && process.platform==='darwin'){
     const info=spawnSync('/usr/bin/afinfo',[saved.path],{encoding:'utf8'});assert.equal(info.status,0,info.stderr);
-    assert.match(info.stdout,/2 ch, 48000 Hz, '?aac/);
+    assert.match(info.stdout,/2\s+ch,\s+48000\s+Hz,\s+'?aac/);
     const bitrate=Number(info.stdout.match(/bit rate:\s*(\d+)/i)?.[1]);assert.ok(bitrate>=120000 && bitrate<=136000,info.stdout);
    } else {
     assert.equal(r.status,0,r.stderr);const stream=JSON.parse(r.stdout).streams[0];
