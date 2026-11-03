@@ -61,4 +61,4 @@ Mac은 `uninstall.command`, Windows는 `uninstall.cmd`를 실행하면 저장 �
 
 M4A 인코딩은 Mac의 기본 afconvert와 Windows ZIP에 포함된 FFmpeg를 사용합니다. MP3는 확장에 포함된 인코더, MP4는 Chrome 인코더를 사용합니다. 업데이트 후 설치 도우미를 다시 실행하고 Chrome 확장 프로그램을 새로고침하세요.
 
-Windows FFmpeg: https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2026-10-13-13-05 (LGPL build). 해당 빌드의 라이선스와 소스 안내는 Windows ZIP의 `native-host-windows/vendor`에 포함합니다.
+Windows FFmpeg: https://github.com/BtbN/FFmpeg-Builds/releases/latest (LGPL build). 해당 빌드의 라이선스와 소스 안내는 Windows ZIP의 `native-host-windows/vendor`에 포함합니다.

@@ -54,10 +54,14 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $ProgressPreference = 'SilentlyContinue'
           $archive = Join-Path $env:RUNNER_TEMP 'ffmpeg-lgpl.zip'
-          $url = 'https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-13-13-05/ffmpeg-N-127507-g24e860f6d3-win64-lgpl.zip'
+          $release = Invoke-RestMethod 'https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest'
+          $asset = @($release.assets | Where-Object { $_.name -eq 'ffmpeg-master-latest-win64-lgpl.zip' })
+          if ($asset.Count -ne 1 -or $asset[0].digest -notmatch '^sha256:[a-f0-9]{64}$') { throw 'Verified LGPL FFmpeg asset is missing' }
+          $url = $asset[0].browser_download_url
+          $expectedHash = $asset[0].digest.Substring(7)
           & curl.exe --fail --location --retry 3 --silent --show-error --output $archive $url
           if ($LASTEXITCODE -ne 0) { throw 'FFmpeg download failed' }
-          if ((Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() -ne 'd51c74a0da099b7c69216af4c29dc99274cad93a743aa1d5935ba024f488c309') { throw 'FFmpeg SHA-256 mismatch' }
+          if ((Get-FileHash $archive -Algorithm SHA256).Hash.ToLower() -ne $expectedHash) { throw 'FFmpeg SHA-256 mismatch' }
           $extracted = Join-Path $env:RUNNER_TEMP 'ffmpeg-lgpl'
           Expand-Archive $archive $extracted -Force
           $binary = Get-ChildItem $extracted -Filter ffmpeg.exe -Recurse | Select-Object -First 1
@@ -66,7 +70,8 @@ jobs:
           New-Item -ItemType Directory $vendor -Force | Out-Null
           Copy-Item $binary.FullName $vendor
           Get-ChildItem $binary.Directory.Parent.FullName -File | Copy-Item -Destination $vendor
-          @('LGPL FFmpeg build: ' + $url, 'Build scripts/source instructions: https://github.com/BtbN/FFmpeg-Builds', 'FFmpeg source revision: https://github.com/FFmpeg/FFmpeg/tree/24e860f6d3') | Set-Content (Join-Path $vendor 'SOURCE.txt')
+          @('LGPL FFmpeg build: ' + $url, 'SHA256: ' + $expectedHash, 'Build scripts/source instructions: https://github.com/BtbN/FFmpeg-Builds', 'FFmpeg version and source revision:') | Set-Content (Join-Path $vendor 'SOURCE.txt')
+          & $binary.FullName -version | Add-Content (Join-Path $vendor 'SOURCE.txt')
           "CHROME_CAPTURE_FFPROBE=$($probe.FullName)" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
       - name: Test Mac installer in a temporary directory
         if: runner.os == 'macOS' && !inputs.skip_validation
