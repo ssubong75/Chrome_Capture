@@ -4,7 +4,7 @@ on:
     inputs:
       tag:
         description: Release tag
-        default: v1.0.0
+        default: v1.1.0
         required: true
       skip_validation:
         description: Package and publish without running validation
@@ -130,5 +130,5 @@ jobs:
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             gh release upload "$RELEASE_TAG" dist/Mac_Chrome_Capture.zip dist/Win_Chrome_Capture.zip --clobber
           else
-            gh release create "$RELEASE_TAG" dist/Mac_Chrome_Capture.zip dist/Win_Chrome_Capture.zip --target "$RELEASE_SHA" --title "Chrome Capture · $RELEASE_TAG" --notes 'AAC-LC recording (M4A, 48kHz stereo, 128kbps) and PNG capture. Filenames use yymmdd_hhmm. Includes install/uninstall helpers and user guides.'
+            gh release create "$RELEASE_TAG" dist/Mac_Chrome_Capture.zip dist/Win_Chrome_Capture.zip --target "$RELEASE_SHA" --title "Chrome Capture · $RELEASE_TAG" --notes 'MP4 tab video recording: 5, 8, 10, 12, 15, 20 seconds. Selectable M4A/MP3 audio and PNG capture, sharing one save folder. Windows helper compiled and tested on GitHub windows-latest; Mac package built on macos-latest.'
           fi

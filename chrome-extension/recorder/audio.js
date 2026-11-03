@@ -1,5 +1,5 @@
 export function duration(value) { return [3,5].includes(Number(value)) ? Number(value) : 5; }
-export function recordingFormat() { return 'm4a'; }
+export function recordingFormat(value) { return value === 'mp3' ? 'mp3' : 'm4a'; }
 
 export function filename(now = new Date(), format = 'm4a') {
   const pad = n => String(n).padStart(2, '0');

@@ -6,6 +6,8 @@ let pending = false;
 function render() {
   const active = pending || ['starting','recording','saving'].includes(state.phase);
   $('record').disabled = active;
+  $('format').disabled = active;
+  $('record').textContent = `${$('format').value === 'mp3' ? 'MP3' : 'AAC-LC (M4A)'} 녹음 시작`;
   $('cancel').hidden = state.phase !== 'recording';
   document.querySelectorAll('[name=seconds]').forEach(el => { el.disabled=active; });
   let text = state.message || '준비됨';
@@ -23,6 +25,7 @@ async function refresh() {
     chrome.storage.local.get({seconds:5,format:'m4a',sharedFolderPath:''}),chrome.storage.session.get('audioState'),chrome.commands.getAll()
   ]);
   document.querySelector(`[name=seconds][value="${duration(local.seconds)}"]`).checked=true;
+  $('format').value=recordingFormat(local.format);
   $('folder').textContent=local.sharedFolderPath ? `공통 저장 폴더: ${local.sharedFolderPath}` : '공통 저장 폴더: 설정에서 확인';
   const key=commands.find(c=>c.name==='record')?.shortcut;
   $('shortcut').textContent=key ? `녹음 단축키: ${key}` : '단축키 미등록 · 설정에서 지정해 주세요.';
@@ -31,11 +34,12 @@ async function refresh() {
 document.querySelectorAll('[name=seconds]').forEach(el=>el.addEventListener('change',async()=> {
   if(el.checked) await chrome.storage.local.set({seconds:Number(el.value)});
 }));
+$('format').onchange=async()=> {await chrome.storage.local.set({format:recordingFormat($('format').value)});render();};
 $('record').onclick=async()=> {
   pending=true;render();
   try {
     const checked=document.querySelector('[name=seconds]:checked');
-    await chrome.storage.local.set({seconds:Number(checked.value),format:'m4a'});
+    await chrome.storage.local.set({seconds:Number(checked.value),format:recordingFormat($('format').value)});
     const result=await send('start');if(!result?.ok) state={phase:'error',message:result?.error || '녹음 시작 실패'};
   } catch(error) { state={phase:'error',message:error.message}; }
   finally {pending=false;await refresh();}

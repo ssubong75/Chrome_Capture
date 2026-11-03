@@ -2,9 +2,10 @@
 <html lang="ko"><head><meta charset="utf-8"><title>Chrome Capture</title><link rel="stylesheet" href="style.css"></head>
 <body class="popup">
 <header><img src="icons/icon32.png" alt=""><div><h1>Chrome Capture</h1><p class="subtitle">오디오와 화면, 한 곳에 저장</p></div></header>
-<nav class="tabs" role="tablist" aria-label="캡처 방식"><button id="audio-tab" role="tab" aria-selected="true" aria-controls="audio-panel">오디오 녹음</button><button id="capture-tab" role="tab" aria-selected="false" aria-controls="capture-panel" tabindex="-1">화면 캡처</button></nav>
+<nav class="tabs" role="tablist" aria-label="캡처 방식"><button id="audio-tab" role="tab" aria-selected="true" aria-controls="audio-panel">오디오 녹음</button><button id="capture-tab" role="tab" aria-selected="false" aria-controls="capture-panel" tabindex="-1">화면 캡처</button><button id="video-tab" role="tab" aria-selected="false" aria-controls="video-panel" tabindex="-1">영상 녹화</button></nav>
 <section id="audio-panel" role="tabpanel" aria-labelledby="audio-tab">
-<p class="muted">현재 탭의 소리 · AAC-LC (M4A) / 128kbps · 48kHz</p>
+<p class="muted">현재 탭의 소리 · 48kHz 스테레오</p>
+<label class="field">오디오 형식<select id="audio-format"><option value="m4a">AAC-LC (M4A) · 128kbps</option><option value="mp3">MP3 · 192kbps</option></select></label>
 <fieldset><legend>녹음 길이</legend><label><input type="radio" name="seconds" value="3"> 3초</label><label><input type="radio" name="seconds" value="5" checked> 5초</label></fieldset>
 <button id="audio-record" class="primary">AAC-LC (M4A) 녹음 시작</button><button id="audio-cancel" hidden>녹음 취소</button>
 <p id="audio-status" class="status" role="status" aria-live="polite">준비됨</p><p id="audio-file" class="filename"></p><p id="audio-notice" class="notice"></p>
@@ -18,6 +19,13 @@
 <button id="capture-captureBtn" class="primary">PNG 캡처 시작</button><button id="capture-optionsBtn" class="secondary">공통 저장 폴더 · 설정</button>
 <p id="capture-status" class="status" role="status" aria-live="polite"></p><p id="capture-shortcutHint" class="muted small"></p>
 </section>
+<section id="video-panel" role="tabpanel" aria-labelledby="video-tab" hidden>
+<p class="muted">현재 탭 화면과 소리 · MP4 (H.264 / AAC)</p>
+<label class="field">녹화 길이<select id="video-seconds"><option>5</option><option>8</option><option>10</option><option>12</option><option>15</option><option>20</option></select>초</label>
+<button id="video-record" class="primary">MP4 녹화 시작</button><button id="video-cancel" hidden>녹화 취소</button>
+<p id="video-status" class="status" role="status" aria-live="polite">준비됨</p><p id="video-file" class="filename"></p>
+<button id="video-settings" class="secondary">공통 저장 폴더 · 설정</button>
+</section>
 <footer>파일명: yymmdd_hhmm · 예: 261005_1939</footer>
 <script type="module" src="popup.js"></script><script type="module" src="recorder/popup.js"></script><script type="module" src="capture/popup.js"></script>
-</body></html>
+<script type="module" src="video/popup.js"></script></body></html>

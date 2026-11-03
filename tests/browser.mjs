@@ -27,6 +27,13 @@ try{
  assert.equal(await popup.locator('[name=seconds]').count(),2);
  assert.equal(await popup.locator('[name=seconds][value="5"]').isChecked(),true);
  assert.equal(await popup.locator('[name=format]').count(),0);
+ await popup.locator('#audio-format').selectOption('mp3');
+ await popup.waitForFunction(()=>document.getElementById('audio-record').textContent.includes('MP3'));
+ assert.equal(await popup.evaluate(async()=> (await chrome.storage.local.get('format')).format),'mp3');
+ await popup.locator('#video-tab').click();
+ assert.equal(await popup.locator('#video-panel').isVisible(),true);
+ assert.deepEqual(await popup.locator('#video-seconds option').evaluateAll(xs=>xs.map(x=>x.value)),['5','8','10','12','15','20']);
+ await popup.locator('#audio-tab').click();
  await popup.locator('[name=seconds][value="3"]').check();
  assert.equal(await popup.evaluate(async()=> (await chrome.storage.local.get('seconds')).seconds),3);
  await popup.locator('#capture-tab').click();assert.equal(await popup.locator('#capture-panel').isVisible(),true);

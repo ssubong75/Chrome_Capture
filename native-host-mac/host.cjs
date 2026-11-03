@@ -96,10 +96,10 @@ function openSaveDirectory() {
 }
 
 function parseDataUrl(dataUrl) {
-  const match = /^data:(image\/png|audio\/mp4);base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl || '');
-  if (!match) throw new Error('PNG 또는 M4A 파일 데이터가 필요합니다.');
+  const match = /^data:(image\/png|audio\/mp4|audio\/mpeg|video\/mp4);base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl || '');
+  if (!match) throw new Error('PNG, M4A, MP3 또는 MP4 파일 데이터가 필요합니다.');
 
-  const ext = match[1].toLowerCase() === 'image/png' ? 'png' : 'm4a';
+  const ext = {'image/png':'png','audio/mp4':'m4a','audio/mpeg':'mp3','video/mp4':'mp4'}[match[1].toLowerCase()];
   return { ext, buffer: Buffer.from(match[2], 'base64') };
 }
 

@@ -171,7 +171,9 @@ internal static class ChromeCaptureHost
         string extension;
         if (metadata == "data:image/png;base64") extension = "png";
         else if (metadata == "data:audio/mp4;base64") extension = "m4a";
-        else throw new InvalidOperationException("Only PNG and M4A are supported.");
+        else if (metadata == "data:audio/mpeg;base64") extension = "mp3";
+        else if (metadata == "data:video/mp4;base64") extension = "mp4";
+        else throw new InvalidOperationException("Only PNG, M4A, MP3 and MP4 are supported.");
         byte[] image = Convert.FromBase64String(dataUrl.Substring(comma + 1));
         string filename = SanitizeFilename(GetString(message, "filename"), extension);
         string saveDirectory = GetSaveDirectory();

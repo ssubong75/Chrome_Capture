@@ -20,11 +20,13 @@ Chrome Recorder와 Video Capture를 하나로 합친 Mac·Windows 공용 Chrome 
 
 ## 기능
 
-팝업에서 오디오 녹음 / 화면 캡처 탭을 선택합니다.
+팝업에서 오디오 녹음 / 화면 캡처 / 영상 녹화 탭을 선택합니다.
+
+영상 녹화는 현재 탭 화면과 소리를 5·8·10·12·15·20초 중 선택하여 MP4(H.264/AAC-LC)로 저장합니다. 최초 기본값은 5초입니다. 오디오는 48kHz 스테레오, 목표 비트레이트 128kbps입니다. 실제 비트레이트는 소리에 따라 달라질 수 있습니다. Chrome의 MP4 인코딩 지원 여부를 확인하고 지원되지 않으면 안내를 표시합니다.
 
 | 항목 | 오디오 녹음 | 화면 캡처 |
 |---|---|---|
-| 저장 형식 | AAC-LC (M4A) 고정, 스테레오 128kbps · 48kHz | PNG 고정 |
+| 저장 형식 | AAC-LC (M4A) 128kbps 또는 MP3 192kbps 선택 · 48kHz 스테레오 | PNG 고정 |
 | 시간 | 3초 / 5초, 최초 기본값 5초 | 지연 0초 / 1초 / 3초 / 5초 |
 | Mac 단축키 | Command + Shift + 7 | Command + Shift + 0 |
 | Windows 단축키 | Alt + Shift + 7 | Alt + Shift + 0 |
@@ -32,11 +34,11 @@ Chrome Recorder와 Video Capture를 하나로 합친 Mac·Windows 공용 Chrome 
 
 파일명은 컴퓨터의 현재 시각을 기준으로 **`yymmdd_hhmm`** 형식으로 생성합니다. 연도는 두 자리이며 초는 포함하지 않습니다. 예: `261005_1939.png`, `261005_1939.m4a`. 같은 분에 다시 저장하면 `261005_1939_1.png`, `261005_1939_2.png`처럼 번호를 붙여 기존 파일을 보존합니다.
 
-두 형식은 **동일한 지정 폴더**에 저장됩니다. 기본값은 바탕화면의 `Capture` 폴더입니다. 선택한 녹음 길이와 화면 캡처 설정은 기억합니다.
+모든 형식은 **동일한 지정 폴더**에 저장됩니다. 기본값은 바탕화면의 `Capture` 폴더입니다. 선택한 녹음 형식·길이, 영상 녹화 길이와 화면 캡처 설정은 기억합니다.
 
 - 현재 탭의 소리만 녹음합니다. 마이크를 사용하지 않으며 녹음 중에도 원래 소리가 들립니다. 팝업을 닫아도 자동 종료·저장은 계속됩니다. 취소하면 파일을 저장하지 않습니다.
 - 48kHz PCM을 AAC-LC · 약 128kbps로 인코딩합니다. 코덱 프레임 때문에 길이는 미세한 차이가 있을 수 있습니다.
-- 화면 캡처는 한 장의 이미지이며 영상 파일 녹화 기능은 아닙니다. 영상 영역 자동 크롭과 자막·컨트롤 숨김 설정을 유지했습니다. 영상 프레임에 원래 포함된 자막·로고는 제거할 수 없습니다.
+- 화면 캡처는 PNG 한 장을 저장합니다. 영상 파일은 별도의 영상 녹화 탭에서 저장합니다. 영상 영역 자동 크롭과 자막·컨트롤 숨김은 PNG 캡처에 적용됩니다.
 - 공통 폴더 저장에 실패하면 오디오는 기존 방식처럼 다운로드 / Chrome Capture에 대신 저장하고 사유를 표시합니다. 화면 캡처는 저장 도우미 연결 오류를 표시합니다.
 - Chrome 내부 페이지와 DRM 보호 미디어는 캡처가 제한될 수 있습니다.
 - 단축키가 비어 있으면 `chrome://extensions/shortcuts`에서 등록하세요.
@@ -57,6 +59,6 @@ Mac은 `uninstall.command`, Windows는 `uninstall.cmd`를 실행하면 저장 �
 
 이전 MP3 인코더의 LGPL 라이선스와 소스는 `chrome-extension/recorder/vendor`에 포함됩니다.
 
-오디오 저장 형식은 `.m4a`이며 AAC-LC · 약 128kbps · 48kHz · 스테레오입니다. Mac은 기본 afconvert, Windows는 ZIP에 포함된 FFmpeg를 사용합니다. 업데이트 후 설치 도우미를 다시 실행하고 Chrome 확장 프로그램을 새로고침하세요.
+M4A 인코딩은 Mac의 기본 afconvert와 Windows ZIP에 포함된 FFmpeg를 사용합니다. MP3는 확장에 포함된 인코더, MP4는 Chrome 인코더를 사용합니다. 업데이트 후 설치 도우미를 다시 실행하고 Chrome 확장 프로그램을 새로고침하세요.
 
 Windows FFmpeg: https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2026-10-13-13-05 (LGPL build). 해당 빌드의 라이선스와 소스 안내는 Windows ZIP의 `native-host-windows/vendor`에 포함합니다.
