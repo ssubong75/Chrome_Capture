@@ -106,7 +106,7 @@ function parseDataUrl(dataUrl) {
 function sanitizeFilename(filename, ext) {
   const now = new Date();
   const pad = n => String(n).padStart(2, '0');
-  const fallback = `${pad(now.getFullYear()%100)}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}.${ext}`;
+  const fallback = `${pad(now.getFullYear()%100)}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.${ext}`;
   const input = filename || fallback;
   const safe = path.basename(input)
     .replace(/[\\/:*?"<>|\u0000-\u001F]+/g, '_')

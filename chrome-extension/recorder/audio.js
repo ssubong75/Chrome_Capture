@@ -3,7 +3,7 @@ export function recordingFormat(value) { return value === 'mp3' ? 'mp3' : 'm4a';
 
 export function filename(now = new Date(), format = 'm4a') {
   const pad = n => String(n).padStart(2, '0');
-  const stamp = `${pad(now.getFullYear()%100)}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
+  const stamp = `${pad(now.getFullYear()%100)}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
   return `${stamp}.${recordingFormat(format)}`;
 }
 

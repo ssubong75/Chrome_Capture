@@ -7,7 +7,7 @@ chrome.runtime.onMessage.addListener((message,sender,respond)=>{
   (async()=>{
     if(message.type==='state'){await state(message.state);return {ok:true};}
     if(message.type==='save'){
-      if(!/^data:video\/mp4;base64,/.test(message.url || '') || !/^\d{6}_\d{4}\.mp4$/.test(message.filename || ''))throw new Error('잘못된 영상 파일입니다.');
+      if(!/^data:video\/mp4;base64,/.test(message.url || '') || !/^\d{6}_\d{6}\.mp4$/.test(message.filename || ''))throw new Error('잘못된 영상 파일입니다.');
       return nativeMessage({action:'saveCapture',dataUrl:message.url,filename:message.filename});
     }
     if(message.type==='cancel')return chrome.runtime.sendMessage({target:'video-offscreen',type:'cancel'});

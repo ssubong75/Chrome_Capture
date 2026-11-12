@@ -27,11 +27,11 @@ test('native protocol saves PNG, M4A, MP3 and MP4 into one selected folder; coll
   // Generated one-pixel PNG fixture; no personal images.
   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a1V8AAAAASUVORK5CYII=','base64');
   for(const [ext,mime,bytes] of [['m4a','audio/mp4',m4a],['png','image/png',png],['mp3','audio/mpeg',Buffer.from('ID3')],['mp4','video/mp4',m4a]]){
-   const result=send({action:'saveCapture',filename:'261005_1939.'+ext,dataUrl:'data:'+mime+';base64,'+bytes.toString('base64')});
+   const result=send({action:'saveCapture',filename:'261005_193900.'+ext,dataUrl:'data:'+mime+';base64,'+bytes.toString('base64')});
    assert.equal(result.ok,true);assert.equal(await realpath(path.dirname(result.path)),await realpath(folder));
-   assert.equal(path.basename(result.path),'261005_1939.'+ext);assert.deepEqual(await readFile(result.path),bytes);
-   const second=send({action:'saveCapture',filename:'261005_1939.'+ext,dataUrl:'data:'+mime+';base64,'+bytes.toString('base64')});
-   assert.equal(path.basename(second.path),'261005_1939_1.'+ext);
+   assert.equal(path.basename(result.path),'261005_193900.'+ext);assert.deepEqual(await readFile(result.path),bytes);
+   const second=send({action:'saveCapture',filename:'261005_193900.'+ext,dataUrl:'data:'+mime+';base64,'+bytes.toString('base64')});
+   assert.equal(path.basename(second.path),'261005_193900_1.'+ext);
   }
   assert.equal((await readdir(folder)).length,8);
   assert.equal(send({action:'saveCapture',dataUrl:'data:audio/wav;base64,AAAA',filename:'bad.wav'}).ok,false);
