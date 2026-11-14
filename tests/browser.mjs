@@ -27,9 +27,9 @@ try{
  assert.equal(await popup.locator('[name=seconds]').count(),2);
  assert.equal(await popup.locator('[name=seconds][value="5"]').isChecked(),true);
  assert.equal(await popup.locator('[name=format]').count(),0);
- await popup.locator('#audio-format').selectOption('mp3');
- await popup.waitForFunction(()=>document.getElementById('audio-record').textContent.includes('MP3'));
- assert.equal(await popup.evaluate(async()=> (await chrome.storage.local.get('format')).format),'mp3');
+ await popup.locator('#audio-format').selectOption('wav');
+ await popup.waitForFunction(()=>document.getElementById('audio-record').textContent.includes('WAV'));
+ assert.equal(await popup.evaluate(async()=> (await chrome.storage.local.get('format')).format),'wav');
  await popup.locator('#video-tab').click();
  assert.equal(await popup.locator('#video-panel').isVisible(),true);
  assert.deepEqual(await popup.locator('#video-seconds option').evaluateAll(xs=>xs.map(x=>x.value)),['5','8','10','12','15','20']);
@@ -50,7 +50,7 @@ try{
  assert.equal(await scene.locator('video').evaluate(v=>v.controls),true);
  assert.equal(await scene.locator('[data-cvc-clean-hidden]').count(),0);
  // A still capture must not clear an ongoing recording badge.
- await popup.evaluate(()=>chrome.runtime.sendMessage({target:'audio',type:'state',state:{phase:'recording',seconds:5,startedAt:Date.now(),format:'m4a'}}));
+ await popup.evaluate(()=>chrome.runtime.sendMessage({target:'audio',type:'state',state:{phase:'recording',seconds:5,startedAt:Date.now(),format:'wav'}}));
  const concurrent=await popup.evaluate(()=>Promise.all([chrome.runtime.sendMessage({target:'capture',type:'CAPTURE_NOW',overrideSettings:{delaySeconds:1}}),chrome.runtime.sendMessage({target:'capture',type:'CAPTURE_NOW'})]));
  assert.equal(concurrent.filter(x=>x.ok).length,1);assert.match(concurrent.find(x=>!x.ok).error,/캡처 또는 저장 중/);
  assert.equal(await worker.evaluate(()=>chrome.action.getBadgeText({})), 'REC');

@@ -28,7 +28,7 @@ async function start(tabId) {
     if (current?.busy) return {ok:false, error:'현재 녹음 또는 저장 중입니다.'};
     const video = await chrome.runtime.sendMessage({target:'video-offscreen',type:'status'});
     if (video?.busy) return {ok:false,error:'영상 녹화 또는 저장 중입니다.'};
-    const settings = await chrome.storage.local.get({seconds:5,format:'m4a'});
+    const settings = await chrome.storage.local.get({seconds:5,format:'wav'});
     const seconds = duration(settings.seconds);
     const tab = tabId ? await chrome.tabs.get(tabId) : (await chrome.tabs.query({active:true, currentWindow:true}))[0];
     if (!tab?.id) throw new Error('녹음할 탭을 찾을 수 없습니다.');
@@ -59,7 +59,7 @@ chrome.runtime.onMessage.addListener((message, sender, respond) => {
       return nativeMessage({action:'encodeAudio',dataUrl:message.url});
     }
     if (message.type === 'save-audio') {
-      if (!/^data:audio\/(mp4|mpeg);base64,/.test(message.url) || !/^\d{6}_\d{6}\.(m4a|mp3)$/.test(message.filename)) throw new Error('오디오 파일 형식이 잘못되었습니다.');
+      if (!/^data:audio\/wav;base64,/.test(message.url) || !/^\d{6}_\d{6}\.wav$/.test(message.filename)) throw new Error('오디오 파일 형식이 잘못되었습니다.');
       const result = await nativeMessage({action:'saveCapture',dataUrl:message.url,filename:message.filename});
       if (!result.ok) throw new Error(result.error || '지정 폴더 저장 실패');
       return result;

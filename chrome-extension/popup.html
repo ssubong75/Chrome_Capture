@@ -5,7 +5,7 @@
 <nav class="tabs" role="tablist" aria-label="캡처 방식"><button id="audio-tab" role="tab" aria-selected="true" aria-controls="audio-panel">오디오 녹음</button><button id="capture-tab" role="tab" aria-selected="false" aria-controls="capture-panel" tabindex="-1">화면 캡처</button><button id="video-tab" role="tab" aria-selected="false" aria-controls="video-panel" tabindex="-1">영상 녹화</button></nav>
 <section id="audio-panel" role="tabpanel" aria-labelledby="audio-tab">
 <p class="muted">현재 탭의 소리 · 48kHz 스테레오</p>
-<label class="field">오디오 형식<select id="audio-format"><option value="m4a">AAC-LC (M4A) · 128kbps</option><option value="mp3">MP3 · 192kbps</option></select></label>
+<label class="field">오디오 형식<select id="audio-format"><option value="wav">WAV · 48kHz / 32-bit float</option></select></label>
 <fieldset><legend>녹음 길이</legend><label><input type="radio" name="seconds" value="3"> 3초</label><label><input type="radio" name="seconds" value="5" checked> 5초</label></fieldset>
 <button id="audio-record" class="primary">AAC-LC (M4A) 녹음 시작</button><button id="audio-cancel" hidden>녹음 취소</button>
 <p id="audio-status" class="status" role="status" aria-live="polite">준비됨</p><p id="audio-file" class="filename"></p><p id="audio-notice" class="notice"></p>

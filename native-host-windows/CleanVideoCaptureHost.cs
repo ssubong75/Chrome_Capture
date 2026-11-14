@@ -30,6 +30,9 @@ internal static class ChromeCaptureHost
                 case "encodeAudio":
                     response = EncodeAudio(message);
                     break;
+                case "saveVideoCapture":
+                    response = SaveVideoCapture(message);
+                    break;
                 case "saveCapture":
                     response = SaveCapture(message);
                     break;
@@ -170,10 +173,11 @@ internal static class ChromeCaptureHost
         string metadata = dataUrl.Substring(0, comma).ToLowerInvariant();
         string extension;
         if (metadata == "data:image/png;base64") extension = "png";
+        else if (metadata == "data:audio/wav;base64") extension = "wav";
         else if (metadata == "data:audio/mp4;base64") extension = "m4a";
         else if (metadata == "data:audio/mpeg;base64") extension = "mp3";
         else if (metadata == "data:video/mp4;base64") extension = "mp4";
-        else throw new InvalidOperationException("Only PNG, M4A, MP3 and MP4 are supported.");
+        else throw new InvalidOperationException("Only PNG, WAV, M4A, MP3 and MP4 are supported.");
         byte[] image = Convert.FromBase64String(dataUrl.Substring(comma + 1));
         string filename = SanitizeFilename(GetString(message, "filename"), extension);
         string saveDirectory = GetSaveDirectory();
@@ -187,6 +191,46 @@ internal static class ChromeCaptureHost
             { "saveDirectory", saveDirectory },
             { "bytes", image.Length }
         };
+    }
+
+    private static Dictionary<string, object> SaveVideoCapture(Dictionary<string, object> message)
+    {
+        const string videoPrefix = "data:video/mp4;base64,";
+        const string audioPrefix = "data:audio/wav;base64,";
+        string videoUrl = GetString(message, "dataUrl"), audioUrl = GetString(message, "audioDataUrl");
+        if (!videoUrl.StartsWith(videoPrefix, StringComparison.Ordinal) || !audioUrl.StartsWith(audioPrefix, StringComparison.Ordinal))
+            throw new InvalidOperationException("MP4 video and PCM WAV audio are required.");
+        string encoder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "vendor", "ffmpeg.exe");
+        if (!File.Exists(encoder)) throw new FileNotFoundException("FFmpeg is missing. Reinstall the save helper.");
+        string saveDirectory = GetSaveDirectory();
+        Directory.CreateDirectory(saveDirectory);
+        string outputPath = Uniquify(Path.Combine(saveDirectory, SanitizeFilename(GetString(message, "filename"), "mp4")));
+        string temp = Path.Combine(Path.GetTempPath(), "chrome-capture-video-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(temp);
+        try
+        {
+            string video = Path.Combine(temp, "video.mp4"), audio = Path.Combine(temp, "audio.wav"), output = Path.Combine(temp, "output.mp4");
+            File.WriteAllBytes(video, Convert.FromBase64String(videoUrl.Substring(videoPrefix.Length)));
+            File.WriteAllBytes(audio, Convert.FromBase64String(audioUrl.Substring(audioPrefix.Length)));
+            using (Process process = Process.Start(new ProcessStartInfo {
+                FileName = encoder,
+                Arguments = "-nostdin -hide_banner -loglevel error -n -i \"" + video + "\" -i \"" + audio +
+                    "\" -map 0:v:0 -map 1:a:0 -c:v copy -c:a pcm_f32le -ar 48000 -ac 2 -af apad -shortest -movflags +faststart \"" + output + "\"",
+                UseShellExecute = false, CreateNoWindow = true,
+                RedirectStandardOutput = true, RedirectStandardError = true
+            }))
+            {
+                var errorTask = process.StandardError.ReadToEndAsync();
+                if (!process.WaitForExit(120000)) { process.Kill(); throw new TimeoutException("PCM MP4 saving timed out."); }
+                string detail = errorTask.GetAwaiter().GetResult();
+                if (process.ExitCode != 0) throw new InvalidOperationException("PCM MP4 saving failed: " + detail);
+            }
+            File.Copy(output, outputPath, false);
+            return new Dictionary<string, object> {
+                { "ok", true }, { "path", outputPath }, { "saveDirectory", saveDirectory }, { "bytes", new FileInfo(outputPath).Length }
+            };
+        }
+        finally { Directory.Delete(temp, true); }
     }
 
     private static Dictionary<string, object> EncodeAudio(Dictionary<string, object> message)

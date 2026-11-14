@@ -8,7 +8,7 @@ import {fileURLToPath} from 'node:url';
 
 const helper=fileURLToPath(new URL('../native-host-mac/host.cjs',import.meta.url));
 
-test('native protocol saves PNG, M4A, MP3 and MP4 into one selected folder; collision preserves files',async()=> {
+test('native protocol saves PNG, WAV, M4A, MP3 and MP4 into one selected folder; collision preserves files',async()=> {
  const temp=await mkdtemp(path.join(tmpdir(),'chrome-capture-save-'));
  try{
   const config=path.join(temp,'config');const folder=path.join(temp,'공통 폴더');await mkdir(config);await mkdir(folder);
@@ -26,14 +26,14 @@ test('native protocol saves PNG, M4A, MP3 and MP4 into one selected folder; coll
   const m4a=Buffer.from('00000014667479704d344120000000004d344120','hex');
   // Generated one-pixel PNG fixture; no personal images.
   const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a1V8AAAAASUVORK5CYII=','base64');
-  for(const [ext,mime,bytes] of [['m4a','audio/mp4',m4a],['png','image/png',png],['mp3','audio/mpeg',Buffer.from('ID3')],['mp4','video/mp4',m4a]]){
+  for(const [ext,mime,bytes] of [['wav','audio/wav',Buffer.from('RIFF')],['m4a','audio/mp4',m4a],['png','image/png',png],['mp3','audio/mpeg',Buffer.from('ID3')],['mp4','video/mp4',m4a]]){
    const result=send({action:'saveCapture',filename:'261005_193900.'+ext,dataUrl:'data:'+mime+';base64,'+bytes.toString('base64')});
    assert.equal(result.ok,true);assert.equal(await realpath(path.dirname(result.path)),await realpath(folder));
    assert.equal(path.basename(result.path),'261005_193900.'+ext);assert.deepEqual(await readFile(result.path),bytes);
    const second=send({action:'saveCapture',filename:'261005_193900.'+ext,dataUrl:'data:'+mime+';base64,'+bytes.toString('base64')});
    assert.equal(path.basename(second.path),'261005_193900_1.'+ext);
   }
-  assert.equal((await readdir(folder)).length,8);
-  assert.equal(send({action:'saveCapture',dataUrl:'data:audio/wav;base64,AAAA',filename:'bad.wav'}).ok,false);
+  assert.equal((await readdir(folder)).length,10);
+  assert.equal(send({action:'saveCapture',dataUrl:'data:audio/unknown;base64,AAAA',filename:'bad.wav'}).ok,false);
  }finally{await rm(temp,{recursive:true,force:true});}
 });

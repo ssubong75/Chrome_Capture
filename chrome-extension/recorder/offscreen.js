@@ -1,5 +1,4 @@
 import { filename, duration, recordingFormat, encodeWav } from './audio.js';
-import { encodeMp3 } from './mp3.js';
 let recording = null;
 let busy = false;
 const report = state => chrome.runtime.sendMessage({target:'audio',type:'state',state});
@@ -24,9 +23,7 @@ async function save(rec) {
   if (rec.finishing || recording !== rec) return;
   rec.finishing = true;
   try {
-    const blob = rec.format === 'mp3'
-      ? encodeMp3(rec.chunks, rec.targetFrames, rec.context.sampleRate)
-      : new Blob([encodeWav(rec.chunks, rec.targetFrames, rec.context.sampleRate)], {type:'audio/wav'});
+    const blob = new Blob([encodeWav(rec.chunks, rec.targetFrames, rec.context.sampleRate)], {type:'audio/wav'});
     if (!blob.size) throw new Error('녹음 데이터가 비어 있습니다.');
     await cleanup(rec);
     const name = filename(new Date(), rec.format);
@@ -35,12 +32,7 @@ async function save(rec) {
       const reader = new FileReader(); reader.onload = () => resolve(reader.result);
       reader.onerror = () => reject(reader.error); reader.readAsDataURL(blob);
     });
-    const encoded = rec.format === 'mp3' ? {ok:true,dataUrl:pcmUrl}
-      : await chrome.runtime.sendMessage({target:'audio',type:'encode-audio',url:pcmUrl});
-    if (!encoded?.ok || !/^data:audio\/(mp4|mpeg);base64,/.test(encoded.dataUrl || '')) {
-      throw new Error(encoded?.error || 'AAC 인코딩 실패. 저장 도우미를 다시 설치해 주세요.');
-    }
-    const url = encoded.dataUrl;
+    const url = pcmUrl;
     let notice;
     const saved = await chrome.runtime.sendMessage({target:'audio',type:'save-audio',url,filename:name});
     if (saved?.ok) {

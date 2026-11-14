@@ -96,10 +96,10 @@ function openSaveDirectory() {
 }
 
 function parseDataUrl(dataUrl) {
-  const match = /^data:(image\/png|audio\/mp4|audio\/mpeg|video\/mp4);base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl || '');
-  if (!match) throw new Error('PNG, M4A, MP3 또는 MP4 파일 데이터가 필요합니다.');
+  const match = /^data:(image\/png|audio\/wav|audio\/mp4|audio\/mpeg|video\/mp4);base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl || '');
+  if (!match) throw new Error('PNG, WAV, M4A, MP3 또는 MP4 파일 데이터가 필요합니다.');
 
-  const ext = {'image/png':'png','audio/mp4':'m4a','audio/mpeg':'mp3','video/mp4':'mp4'}[match[1].toLowerCase()];
+  const ext = {'image/png':'png','audio/wav':'wav','audio/mp4':'m4a','audio/mpeg':'mp3','video/mp4':'mp4'}[match[1].toLowerCase()];
   return { ext, buffer: Buffer.from(match[2], 'base64') };
 }
 
@@ -144,6 +144,27 @@ function saveCapture(message) {
   return { ok: true, path: outputPath, saveDirectory, bytes: buffer.length };
 }
 
+function saveVideoCapture(message) {
+  const video = parseDataUrl(message.dataUrl);
+  const audio = parseDataUrl(message.audioDataUrl);
+  if (video.ext !== 'mp4' || audio.ext !== 'wav') throw new Error('MP4 영상과 PCM WAV 오디오가 필요합니다.');
+  const ffmpeg = ['/opt/homebrew/bin/ffmpeg', '/usr/local/bin/ffmpeg'].find(file => fs.existsSync(file));
+  if (!ffmpeg) throw new Error('PCM MP4 저장에는 FFmpeg가 필요합니다. FFmpeg를 설치해 주세요.');
+  const saveDirectory = getSaveDirectory();
+  fs.mkdirSync(saveDirectory, {recursive:true});
+  const outputPath = uniquify(path.join(saveDirectory, sanitizeFilename(message.filename, 'mp4')));
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'chrome-capture-video-'));
+  try {
+    const input = path.join(temp, 'video.mp4'), wav = path.join(temp, 'audio.wav'), output = path.join(temp, 'output.mp4');
+    fs.writeFileSync(input, video.buffer);fs.writeFileSync(wav, audio.buffer);
+    execFileSync(ffmpeg, ['-hide_banner','-loglevel','error','-nostdin','-n','-i',input,'-i',wav,
+      '-map','0:v:0','-map','1:a:0','-c:v','copy','-c:a','pcm_f32le','-ar','48000','-ac','2',
+      '-af','apad','-shortest','-movflags','+faststart',output], {timeout:120000,maxBuffer:1024*1024});
+    fs.copyFileSync(output, outputPath, fs.constants.COPYFILE_EXCL);
+    return {ok:true,path:outputPath,saveDirectory,bytes:fs.statSync(outputPath).size};
+  } finally { fs.rmSync(temp,{recursive:true,force:true}); }
+}
+
 function encodeAudio(message) {
   const match = /^data:audio\/wav;base64,([A-Za-z0-9+/=]+)$/.exec(message.dataUrl || '');
   if (!match) throw new Error('PCM WAV 녹음 데이터가 필요합니다.');
@@ -181,6 +202,9 @@ function main() {
     switch (message.action) {
       case 'encodeAudio':
         response = encodeAudio(message);
+        break;
+      case 'saveVideoCapture':
+        response = saveVideoCapture(message);
         break;
       case 'saveCapture':
         response = saveCapture(message);

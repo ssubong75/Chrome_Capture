@@ -7,14 +7,14 @@ function render() {
   const active = pending || ['starting','recording','saving'].includes(state.phase);
   $('record').disabled = active;
   $('format').disabled = active;
-  $('record').textContent = `${$('format').value === 'mp3' ? 'MP3' : 'AAC-LC (M4A)'} 녹음 시작`;
+  $('record').textContent = 'WAV 녹음 시작';
   $('cancel').hidden = state.phase !== 'recording';
   document.querySelectorAll('[name=seconds]').forEach(el => { el.disabled=active; });
   let text = state.message || '준비됨';
   if (state.phase === 'starting' || pending) text='녹음 준비 중…';
   if (state.phase === 'recording') {
     const left=Math.max(0,state.seconds-(Date.now()-state.startedAt)/1000);
-    text=`${(state.format || 'm4a').toUpperCase()} 녹음 중 · ${left.toFixed(1)}초 남음`;
+    text=`${(state.format || 'wav').toUpperCase()} 녹음 중 · ${left.toFixed(1)}초 남음`;
   }
   $('status').textContent=text;
   $('file').textContent=state.filename || '';
@@ -22,7 +22,7 @@ function render() {
 }
 async function refresh() {
   const [local,session,commands]=await Promise.all([
-    chrome.storage.local.get({seconds:5,format:'m4a',sharedFolderPath:''}),chrome.storage.session.get('audioState'),chrome.commands.getAll()
+    chrome.storage.local.get({seconds:5,format:'wav',sharedFolderPath:''}),chrome.storage.session.get('audioState'),chrome.commands.getAll()
   ]);
   document.querySelector(`[name=seconds][value="${duration(local.seconds)}"]`).checked=true;
   $('format').value=recordingFormat(local.format);

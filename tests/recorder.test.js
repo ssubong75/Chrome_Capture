@@ -10,7 +10,7 @@ test('worklet copies channels and keeps source playback unchanged',async()=> {
  assert.deepEqual([...posted[0]],[...original]);assert.deepEqual([...posted[1]],[...original]);assert.notEqual(posted[0].buffer,original.buffer);
 });
 
-test('AAC lifecycle: exact target samples, duplicate prevention, cancel, shared native saving, download fallback',async()=> {
+test('WAV lifecycle: exact target samples, duplicate prevention, cancel, shared native saving, download fallback',async()=> {
  let listener,processor;const messages=[],tracks=[],contexts=[];let nativeAvailable=true;
  globalThis.chrome={runtime:{id:'test',getURL:s=>s,onMessage:{addListener:f=>{listener=f;}},sendMessage:async msg=>{
   messages.push(msg);
@@ -34,7 +34,7 @@ test('AAC lifecycle: exact target samples, duplicate prevention, cancel, shared 
   assert.equal((await send('start',{streamId:'test',seconds,format:'wav'})).ok,true);
   assert.equal((await send('start',{streamId:'duplicate',seconds})).ok,false);
   processor.port.onmessage({data:[new Float32Array(seconds*48000+128),new Float32Array(seconds*48000+128)]});await done();
-  const saved=messages.filter(x=>x.type==='save-audio').at(-1);assert.match(saved.filename,/^\d{6}_\d{6}\.m4a$/);assert.match(saved.url,/^data:audio\/mp4;base64,/);
+  const saved=messages.filter(x=>x.type==='save-audio').at(-1);assert.match(saved.filename,/^\d{6}_\d{6}\.wav$/);assert.match(saved.url,/^data:audio\/wav;base64,/);
   assert.equal(messages.at(-1).state.phase,'done');assert.match(messages.at(-1).state.filename,/^shared\//);
  }
  assert.equal(tracks.every(x=>x.stopped),true);assert.equal(contexts.every(x=>x.state==='closed'),true);
